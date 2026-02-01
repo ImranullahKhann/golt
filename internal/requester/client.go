@@ -10,7 +10,7 @@ func Makereq(url string) (int32, int16, error){
 	
 	resp, err := http.Get(url)
 	if err != nil {
-		return 0, 0, err
+		panic(err)
 	}
 	statusCode := int16(resp.StatusCode)
 	defer resp.Body.Close()
