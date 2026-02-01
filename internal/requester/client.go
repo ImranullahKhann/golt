@@ -9,10 +9,10 @@ func Makereq(url string) (int32, int16, error){
 	start := time.Now()
 	
 	resp, err := http.Get(url)
-	statusCode := int16(resp.StatusCode)
 	if err != nil {
-		return 0, statusCode, err
+		return 0, 0, err
 	}
+	statusCode := int16(resp.StatusCode)
 	defer resp.Body.Close()
 
 	// time until the headers and the start of the body are recieved; Time to First Byte (TTFB) in microseconds

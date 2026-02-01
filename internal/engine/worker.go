@@ -3,24 +3,35 @@ package engine
 import (
 	"github.com/imranullahkhann/golt/internal/requester"
 	"github.com/imranullahkhann/golt/internal/types"
-	"slices"
-	"cmp"
+	"github.com/imranullahkhann/golt/internal/stats"
+	"sync"
 )
 
 func Startload(n int, url string) []types.Result {
-	responseData := make([]types.Result, 0, 100)
+	result := make(chan types.Result, n)
+	collection := make(chan []types.Result)
+	var wg sync.WaitGroup
+
+	go stats.Aggregatedata(result, collection)
 
 	for i := 0; i < n; i++ {
-		latency, status, err := requester.Makereq(url)
+		wg.Add(1)
+		go worker(result, url, &wg)
+	}
 
-		resResult := types.Result{Latency: latency, Status: status, Err: err}
-		
-		responseData = append(responseData, resResult)
-	}	
+	wg.Wait()
+	close(result)
 
-	slices.SortFunc(responseData, func(a, b types.Result) int {
-		return cmp.Compare(a.Latency, b.Latency)
-	})
-	
+	responseData := <- collection
+
 	return responseData
+}
+
+
+func worker(result chan<- types.Result, url string, wg *sync.WaitGroup) {
+	latency, status, err := requester.Makereq(url)
+	resResult := types.Result{Latency: latency, Status: status, Err: err}
+
+	result <- resResult
+	wg.Done()
 }
