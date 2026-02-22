@@ -13,5 +13,6 @@ A high-concurrency HTTP load generator built in Go to measure service latency di
 golt -url=http://localhost:8080/users -n=2000 -c=400 -t=30 -p=95
 # Output
 # Responses: 60000
+# Failed Requests: 0 
 # P95 Latency: 4193
 ```

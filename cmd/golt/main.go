@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/imranullahkhann/golt/internal/engine"
 	"github.com/imranullahkhann/golt/internal/stats"
-	"github.com/imranullahkhann/golt/internal/types"
 )
 
 func main() {
@@ -37,8 +36,9 @@ func main() {
 		panic("Duration should be in the range of [10, 300] seconds")
 	}	
 
-	var responseData []types.Result = engine.Startload(url, num, conc, tim)
+	responseData, failedReqs := engine.Startload(url, num, conc, tim)
 
 	fmt.Printf("Responses: %d \n", len(responseData))
+	fmt.Printf("Failed Requests: %d \n", failedReqs)
 	fmt.Printf("P%v Latency: %v \n", *percentile, stats.Getpercentile(responseData, *percentile))
 }

@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-func Startload(url string, n int, c int, t int) []types.Result {
+func Startload(url string, n int, c int, t int) ([]types.Result, int) {
 	// Initialize a pool of c go routines, and make them wait for request cue via a channel
 	// Send n cues per second
 	// For t seconds
@@ -43,18 +43,23 @@ func Startload(url string, n int, c int, t int) []types.Result {
 	wg.Wait()
 	close(done)
 	close(result)
+	var failedReqs int  = 0;
 	for res := range result {
+		if res.Status >= 400 {
+			failedReqs++
+			continue;
+		}
 		results = append(results, res)
 	}	
 
-	return results
+	return results, failedReqs
 }
 
 
 func worker(result chan<- types.Result, message <-chan uint8, url string, wg* sync.WaitGroup) {
 	for range message {
-		latency, status, err := requester.MakeReq(url)
-		res := types.Result{Latency: latency, Status: status, Err: err} 
+		latency, status := requester.MakeReq(url)
+		res := types.Result{Latency: latency, Status: status} 
 		result <- res
 	}
 	wg.Done()
